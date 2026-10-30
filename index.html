@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Appointment System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: whitesmoke;
+        }
+
+        h2 {
+            color: green;
+        }
+
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        button {
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        table {
+            margin: 15px auto;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        #message {
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Hospital Appointment Booking System</h1>
+
+<h2>Add Doctor</h2>
+
+<input type="text" id="doctorId" placeholder="Doctor ID">
+<input type="text" id="doctorName" placeholder="Doctor Name">
+<button onclick="addDoctor()">Add Doctor</button>
+
+<h2>Doctor List</h2>
+
+<table>
+    <tr>
+        <th>Doctor ID</th>
+        <th>Doctor Name</th>
+    </tr>
+    <tbody id="doctorList"></tbody>
+</table>
+
+<h2>Book Appointment</h2>
+
+<input type="text" id="patientName" placeholder="Patient Name">
+<select id="selectDoctor"></select>
+<input type="date" id="date">
+<input type="time" id="time">
+<button onclick="bookAppointment()">Book</button>
+
+<h2>Cancel Appointment</h2>
+
+<input type="number" id="cancelId" placeholder="Appointment ID">
+<button onclick="cancelAppointment()">Cancel</button>
+
+<h3 id="message"></h3>
+
+<h2>Active Appointments</h2>
+
+<table>
+    <tr>
+        <th>Appointment ID</th>
+        <th>Patient</th>
+        <th>Doctor</th>
+        <th>Date</th>
+        <th>Time</th>
+    </tr>
+    <tbody id="appointmentList"></tbody>
+</table>
+
+<script>
+
+let doctors = [];
+let appointments = [];
+let nextId = 1;
+
+function addDoctor() {
+    let id = document.getElementById("doctorId").value.trim();
+    let name = document.getElementById("doctorName").value.trim();
+
+    if (id == "" || name == "") {
+        alert("Enter doctor details");
+        return;
+    }
+
+    for (let d of doctors) {
+        if (d.id == id) {
+            alert("Doctor ID already exists");
+            return;
+        }
+    }
+
+    doctors.push({id: id, name: name});
+
+    document.getElementById("doctorId").value = "";
+    document.getElementById("doctorName").value = "";
+
+    document.getElementById("message").innerText = "DOCTOR ADDED";
+
+    display();
+}
+
+function bookAppointment() {
+    let patient = document.getElementById("patientName").value.trim();
+    let doctor = document.getElementById("selectDoctor").value;
+    let date = document.getElementById("date").value;
+    let time = document.getElementById("time").value;
+
+    if (patient == "" || doctor == "" || date == "" || time == "") {
+        document.getElementById("message").innerText =
+            "ENTER ALL DETAILS";
+        return;
+    }
+
+    for (let a of appointments) {
+        if (a.doctor == doctor &&
+            a.date == date &&
+            a.time == time) {
+
+            document.getElementById("message").innerText =
+                "SLOT ALREADY BOOKED";
+            return;
+        }
+    }
+
+    appointments.push({
+        id: nextId,
+        patient: patient,
+        doctor: doctor,
+        date: date,
+        time: time
+    });
+
+    document.getElementById("message").innerText =
+        "APPOINTMENT BOOKED: ID " + nextId;
+
+    nextId++;
+
+    document.getElementById("patientName").value = "";
+
+    display();
+}
+
+function cancelAppointment() {
+    let id = document.getElementById("cancelId").value.trim();
+
+    if (id == "" || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+        document.getElementById("message").innerText =
+            "INVALID APPOINTMENT ID";
+        return;
+    }
+
+    for (let i = 0; i < appointments.length; i++) {
+        if (appointments[i].id == Number(id)) {
+
+            appointments.splice(i, 1);
+
+            document.getElementById("message").innerText =
+                "APPOINTMENT CANCELLED: ID " + id;
+
+            document.getElementById("cancelId").value = "";
+
+            display();
+            return;
+        }
+    }
+
+    document.getElementById("message").innerText =
+        "APPOINTMENT NOT FOUND";
+}
+
+function display() {
+    let doctorList = document.getElementById("doctorList");
+    let selectDoctor = document.getElementById("selectDoctor");
+    let appointmentList = document.getElementById("appointmentList");
+
+    doctorList.innerHTML = "";
+    selectDoctor.innerHTML = '<option value="">Select Doctor</option>';
+    appointmentList.innerHTML = "";
+
+    for (let d of doctors) {
+        doctorList.innerHTML += `
+            <tr>
+                <td>${d.id}</td>
+                <td>${d.name}</td>
+            </tr>
+        `;
+
+        selectDoctor.innerHTML +=
+            `<option value="${d.id}">${d.name}</option>`;
+    }
+
+    for (let a of appointments) {
+        let doctorName = "";
+
+        for (let d of doctors) {
+            if (d.id == a.doctor) {
+                doctorName = d.name;
+                break;
+            }
+        }
+
+        appointmentList.innerHTML += `
+            <tr>
+                <td>${a.id}</td>
+                <td>${a.patient}</td>
+                <td>${doctorName}</td>
+                <td>${a.date}</td>
+                <td>${a.time}</td>
+            </tr>
+        `;
+    }
+}
+
+display();
+
+</script>
+
+</body>
+</html>
